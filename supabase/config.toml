@@ -1,0 +1,14 @@
+project_id = "viatryon"
+
+[api]
+enabled = true
+
+[db]
+shadow_port = 54320
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+
+[storage]
+file_size_limit = "10MB"
