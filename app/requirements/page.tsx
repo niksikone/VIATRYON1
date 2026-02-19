@@ -1,40 +1,24 @@
 import Link from "next/link";
+import SiteNav from "@/components/layout/SiteNav";
+import SiteFooter from "@/components/layout/SiteFooter";
+
+// This is a fully static page
+export const dynamic = 'force-static';
 
 export default function Requirements() {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      {/* Navigation */}
-      <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold text-gray-900">
-            VIATRYON
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/how-it-works" className="text-sm text-gray-600 hover:text-gray-900">
-              How It Works
-            </Link>
-            <Link href="/requirements" className="text-sm text-gray-900 font-medium">
-              Requirements
-            </Link>
-            <Link href="/demo" className="text-sm text-gray-600 hover:text-gray-900">
-              Demo
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
-            >
-              Login
-            </Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gradient-to-b from-white to-[#F9FAFB]">
+      <SiteNav />
 
       {/* Hero */}
-      <section className="border-b border-gray-200 px-6 py-16">
+      <section className="pt-32 pb-16 px-6">
         <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-5xl font-bold text-gray-900">Technical Requirements</h1>
-          <p className="mt-4 text-xl text-gray-600">
-            Everything you need to know to integrate VIATRYON
+          <div className="inline-block px-4 py-2 rounded-full bg-[#2D8C88]/10 border border-[#2D8C88]/20 mb-6">
+            <span className="text-sm font-semibold text-[#2D8C88]">Technical Documentation</span>
+          </div>
+          <h1 className="text-5xl font-serif font-semibold text-[#1F2937] mb-4">System Requirements</h1>
+          <p className="text-xl text-[#4B5563]">
+            Everything you need to integrate ViaTryOn into your store
           </p>
         </div>
       </section>
@@ -164,48 +148,48 @@ export default function Requirements() {
 
           {/* Integration Requirements */}
           <div>
-            <h2 className="mb-6 text-3xl font-bold text-gray-900">Integration Requirements</h2>
+            <h2 className="mb-6 text-3xl font-serif font-semibold text-[#1F2937]">Integration Requirements</h2>
             <div className="space-y-4">
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-                <h3 className="mb-3 text-lg font-semibold">E-Commerce Platforms</h3>
-                    <p className="mb-4 text-gray-600">
-                  VIATRYON works with any platform that allows custom HTML/JavaScript:
+              <div className="rounded-2xl border border-gray-200 bg-[#F9FAFB] p-8 shadow-sm">
+                <h3 className="mb-3 text-lg font-semibold text-[#1F2937]">E-Commerce Platforms</h3>
+                <p className="mb-6 text-[#4B5563]">
+                  ViaTryOn works with any platform that allows custom HTML/JavaScript:
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center shadow-sm text-gray-700">
+                  <div className="rounded-lg border border-[#2D8C88]/20 bg-white px-4 py-3 text-center shadow-sm text-[#1F2937] font-medium">
                     Shopify
                   </div>
-                  <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center shadow-sm text-gray-700">
+                  <div className="rounded-lg border border-[#2D8C88]/20 bg-white px-4 py-3 text-center shadow-sm text-[#1F2937] font-medium">
                     WooCommerce
                   </div>
-                  <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center shadow-sm text-gray-700">
+                  <div className="rounded-lg border border-[#2D8C88]/20 bg-white px-4 py-3 text-center shadow-sm text-[#1F2937] font-medium">
                     Magento
                   </div>
-                  <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center shadow-sm text-gray-700">
+                  <div className="rounded-lg border border-[#2D8C88]/20 bg-white px-4 py-3 text-center shadow-sm text-[#1F2937] font-medium">
                     BigCommerce
                   </div>
-                  <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center shadow-sm text-gray-700">
+                  <div className="rounded-lg border border-[#2D8C88]/20 bg-white px-4 py-3 text-center shadow-sm text-[#1F2937] font-medium">
                     Wix
                   </div>
-                  <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center shadow-sm text-gray-700">
+                  <div className="rounded-lg border border-[#2D8C88]/20 bg-white px-4 py-3 text-center shadow-sm text-[#1F2937] font-medium">
                     Squarespace
                   </div>
-                  <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center shadow-sm text-gray-700">
+                  <div className="rounded-lg border border-[#2D8C88]/20 bg-white px-4 py-3 text-center shadow-sm text-[#1F2937] font-medium">
                     Custom Sites
                   </div>
-                  <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-center shadow-sm text-gray-700">
+                  <div className="rounded-lg border border-[#2D8C88]/20 bg-white px-4 py-3 text-center shadow-sm text-[#1F2937] font-medium">
                     More...
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-                <h3 className="mb-3 text-lg font-semibold">Installation Methods</h3>
+              <div className="rounded-2xl border border-gray-200 bg-[#F9FAFB] p-8 shadow-sm">
+                <h3 className="mb-3 text-lg font-semibold text-[#1F2937]">Installation Methods</h3>
                 <div className="space-y-4">
                   <div>
-                    <div className="mb-2 font-semibold">Option 1: JavaScript Widget (Recommended)</div>
-                    <div className="rounded-lg bg-gray-900 p-4">
-                      <code className="text-xs text-green-400">
+                    <div className="mb-2 font-semibold text-[#1F2937]">Option 1: JavaScript Widget (Recommended)</div>
+                    <div className="rounded-lg bg-[#1F2937] p-4">
+                      <code className="text-sm text-[#2D8C88] font-mono">
                         {`<script src="https://viatryon.com/embed.js"></script>`}
                         <br />
                         {`<div data-viatryon-product="YOUR_PRODUCT_ID"></div>`}
@@ -213,9 +197,9 @@ export default function Requirements() {
                     </div>
                   </div>
                   <div>
-                    <div className="mb-2 font-semibold">Option 2: iframe Embed</div>
-                    <div className="rounded-lg bg-gray-900 p-4">
-                      <code className="text-xs text-green-400">
+                    <div className="mb-2 font-semibold text-[#1F2937]">Option 2: iframe Embed</div>
+                    <div className="rounded-lg bg-[#1F2937] p-4">
+                      <code className="text-sm text-[#2D8C88] font-mono">
                         {`<iframe src="https://viatryon.com/widget/YOUR_PRODUCT_ID" 
         width="100%" height="600"></iframe>`}
                       </code>
@@ -232,39 +216,39 @@ export default function Requirements() {
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 shadow-sm">
               <div className="grid gap-8 lg:grid-cols-2">
                 <div>
-                  <h3 className="mb-4 text-lg font-semibold">Mobile (Recommended)</h3>
-                  <ul className="space-y-3 text-neutral-300">
+                  <h3 className="mb-4 text-lg font-semibold text-[#1F2937]">Mobile (Recommended)</h3>
+                  <ul className="space-y-3 text-[#4B5563]">
                     <li className="flex items-start gap-2">
-                      <span className="text-green-400">✓</span>
+                      <span className="text-[#2D8C88]">✓</span>
                       <span>iPhone 7 or newer (iOS 11.1+)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-400">✓</span>
+                      <span className="text-[#2D8C88]">✓</span>
                       <span>Android 8.0+ with camera</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-400">✓</span>
+                      <span className="text-[#2D8C88]">✓</span>
                       <span>Minimum 2GB RAM</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-400">✓</span>
+                      <span className="text-[#2D8C88]">✓</span>
                       <span>Rear camera: 8MP or higher</span>
                     </li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="mb-4 text-lg font-semibold">Desktop</h3>
-                  <ul className="space-y-3 text-neutral-300">
+                  <h3 className="mb-4 text-lg font-semibold text-[#1F2937]">Desktop</h3>
+                  <ul className="space-y-3 text-[#4B5563]">
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-400">ℹ</span>
+                      <span className="text-[#F28C38]">ℹ</span>
                       <span>Desktop users see QR code to continue on mobile</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-400">ℹ</span>
+                      <span className="text-[#F28C38]">ℹ</span>
                       <span>Webcam support for try-on (optional)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-blue-400">ℹ</span>
+                      <span className="text-[#F28C38]">ℹ</span>
                       <span>Modern browser with WebRTC support</span>
                     </li>
                   </ul>
@@ -297,35 +281,37 @@ export default function Requirements() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-gray-200 bg-emerald-50 px-6 py-16">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold text-gray-900">All Requirements Met?</h2>
-          <p className="mt-4 text-lg text-gray-600">
-            You're ready to integrate VIATRYON into your jewelry store
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/signup"
-              className="rounded-lg bg-emerald-500 px-8 py-4 text-base font-semibold text-white hover:bg-emerald-600"
-            >
-              Start Free Trial
-            </Link>
-            <Link
-              href="/how-it-works"
-              className="text-emerald-400 hover:text-emerald-300"
-            >
-              Learn How It Works →
-            </Link>
+      <section className="mt-20 py-20 bg-gradient-to-r from-[#2D8C88] to-[#F28C38] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+        </div>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-4xl font-serif font-semibold text-white mb-4">Ready to Get Started?</h2>
+            <p className="text-xl text-white/95 mb-8">
+              All requirements met? Start converting browsers into buyers today
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/signup"
+                className="inline-block bg-white text-[#2D8C88] px-10 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-200 shadow-xl hover:shadow-2xl"
+              >
+                Start Free Trial
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="inline-block border-2 border-white text-white px-10 py-4 rounded-full font-semibold hover:bg-white hover:text-[#2D8C88] transition-all duration-200"
+              >
+                Learn How It Works
+              </Link>
+            </div>
+            <p className="mt-6 text-white/90 text-sm">No credit card required • Setup in minutes</p>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 bg-gray-50 px-6 py-12">
-        <div className="mx-auto max-w-7xl text-center text-sm text-gray-500">
-          © {new Date().getFullYear()} VIATRYON. All rights reserved.
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

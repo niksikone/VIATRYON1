@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useCallback } from "react";
 
 const slugify = (value: string) =>
   value
@@ -9,13 +9,13 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
 
-export default function AdminTenantForm() {
+const AdminTenantForm = React.memo(() => {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     setMessage(null);
@@ -37,39 +37,51 @@ export default function AdminTenantForm() {
     setMessage("Tenant created.");
     setName("");
     setSlug("");
-  };
+  }, [name, slug]);
+
+  const handleNameChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setName(value);
+    setSlug(slugify(value));
+  }, []);
+
+  const handleSlugChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(slugify(event.target.value));
+  }, []);
 
   return (
-    <form className="space-y-3" onSubmit={onSubmit}>
+    <form className="space-y-4" onSubmit={onSubmit}>
+      <h3 className="text-sm font-semibold text-[#1F2937] uppercase tracking-wider">Add New Store</h3>
       <div className="grid gap-3 md:grid-cols-2">
         <input
-          className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-white"
+          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-[#1F2937] focus:border-[#2D8C88] focus:ring-2 focus:ring-[#2D8C88]/20 outline-none transition-all"
           placeholder="Store name"
           value={name}
-          onChange={(event) => {
-            setName(event.target.value);
-            setSlug(slugify(event.target.value));
-          }}
+          onChange={handleNameChange}
           required
         />
         <input
-          className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-white"
+          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-[#1F2937] focus:border-[#2D8C88] focus:ring-2 focus:ring-[#2D8C88]/20 outline-none transition-all"
           placeholder="store-slug"
           value={slug}
-          onChange={(event) => setSlug(slugify(event.target.value))}
+          onChange={handleSlugChange}
           required
         />
       </div>
       <button
-        className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black"
+        className="rounded-full bg-[#2D8C88] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#F28C38] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         type="submit"
         disabled={loading}
       >
-        {loading ? "Creating..." : "Create tenant"}
+        {loading ? "Creating..." : "Create Store"}
       </button>
       {message && (
-        <p className="text-xs text-neutral-400">{message}</p>
+        <p className={`text-sm ${message.includes("Failed") ? "text-red-600" : "text-[#2D8C88]"}`}>{message}</p>
       )}
     </form>
   );
-}
+});
+
+AdminTenantForm.displayName = 'AdminTenantForm';
+
+export default AdminTenantForm;

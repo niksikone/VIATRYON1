@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
@@ -11,7 +12,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: adminRow } = await supabase
+  const supabaseAdmin = createSupabaseAdminClient();
+  const { data: adminRow } = await supabaseAdmin
     .from("admin_users")
     .select("id")
     .eq("id", user.id)
@@ -21,7 +23,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => null);
+  let body;
+  try {
+    body = await request.json();
+  } catch (error) {
+    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
+
   const name = body?.name?.trim();
   const slug = body?.slug?.trim();
 
@@ -32,7 +40,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: tenant, error } = await supabase
+  if (name.length > 100 || slug.length > 100) {
+    return NextResponse.json(
+      { error: "Name and slug must be under 100 characters." },
+      { status: 400 }
+    );
+  }
+
+  if (!/^[a-z0-9-]+$/.test(slug)) {
+    return NextResponse.json(
+      { error: "Slug must contain only lowercase letters, numbers, and hyphens." },
+      { status: 400 }
+    );
+  }
+
+  const { data: tenant, error } = await supabaseAdmin
     .from("tenants")
     .insert({ name, slug })
     .select("id")
@@ -45,8 +67,8 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true, tenantId: tenant.id });
+  return NextResponse.json(
+    { ok: true, tenantId: tenant.id },
+    { headers: { "Cache-Control": "no-store, must-revalidate" } }
+  );
 }
-
-// Ensure TypeScript treats this as a module
-export {};

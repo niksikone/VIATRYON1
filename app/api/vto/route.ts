@@ -36,9 +36,6 @@ function validateApiKeyFormat(key: string): { valid: boolean; error?: string } {
 /**
  * Polls the Perfect Corp status endpoint until success or error.
  */
-/**
- * Polls the Perfect Corp status endpoint until success or error.
- */
 async function pollTaskStatus(
   taskId: string,
   apiKey: string,
@@ -46,8 +43,8 @@ async function pollTaskStatus(
   pollEndpoint: string
 ): Promise<{ error?: string; status?: number; data?: any }> {
   const pollUrl = `${apiUrl}${pollEndpoint}/${taskId}`;
-  const maxRetries = 15; // Increased retries for slower processing
-  const interval = 2000; // 2 seconds between polls
+  const maxRetries = 15;
+  const interval = 2000;
 
   for (let i = 0; i < maxRetries; i++) {
     await sleep(interval);
@@ -55,33 +52,25 @@ async function pollTaskStatus(
     try {
       const response = await fetch(pollUrl, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
+        headers: { Authorization: `Bearer ${apiKey}` },
       });
 
       const result = await response.json().catch(() => null);
 
       if (result?.status === 200) {
         const taskStatus = result.data?.task_status;
-
-        if (taskStatus === "success") {
-          console.log("VTO Task Successful");
-          return { data: result.data };
-        } else if (taskStatus === "error") {
-          console.error("VTO Task Error:", result.data?.error_message);
+        if (taskStatus === "success") return { data: result.data };
+        if (taskStatus === "error") {
           return {
             error: result.data?.error_message || "Task failed",
             status: 400,
           };
         }
-        // If status is 'processing' or 'pending', loop continues
-        console.log(`Task status: ${taskStatus} (Attempt ${i + 1}/${maxRetries})...`);
       } else if (response.status === 401) {
         return { error: "Authentication failed during polling", status: 401 };
       }
-    } catch (error) {
-      console.error("Polling error:", error);
+    } catch {
+      // Retry on network errors
     }
   }
 
@@ -227,24 +216,18 @@ async function createAndPollVTOTask(params: {
     body: JSON.stringify(payload),
   };
 
-  console.log(`[PERFECT CORP] Creating ${productType} VTO task - THIS WILL CHARGE 1 UNIT`);
-
   try {
     const initResponse = await fetch(apiEndpoint, fetchOptions);
     const initData = await initResponse.json().catch(() => null);
 
     if (!initResponse.ok || initData?.status !== 200) {
-      console.error(`Perfect Corp Task Creation Failed:`, JSON.stringify(initData, null, 2));
-      return { error: `Task creation failed` };
+      return { error: "Task creation failed" };
     }
 
     const taskId = initData.data?.task_id;
     if (!taskId) {
-      console.error(`No task_id in response`);
-      return { error: `No task ID returned` };
+      return { error: "No task ID returned" };
     }
-
-    console.log(`${productType} Task Created. ID: ${taskId}. Starting polling...`);
 
     const pollResult = await pollTaskStatus(taskId, apiKey, baseUrl, vtoConfig.pollEndpoint);
 
@@ -252,33 +235,20 @@ async function createAndPollVTOTask(params: {
       return { error: pollResult.error, taskId };
     }
 
-    // Log full response to discover mask/segmentation data
-    console.log(`[PERFECT CORP RESPONSE] Full data:`, JSON.stringify(pollResult.data, null, 2));
-
     const resultUrl = extractResultUrl({ data: pollResult.data });
 
     if (!resultUrl) {
-      return { error: `No result URL found`, taskId };
+      return { error: "No result URL found", taskId };
     }
 
-    console.log(`[${productType}] Result URL: ${resultUrl}`);
-    
-    // Check for mask/segmentation data
     const maskUrl = pollResult.data?.results?.mask_url || 
                     pollResult.data?.mask_url ||
                     pollResult.data?.results?.segmentation_url ||
                     null;
     
-    if (maskUrl) {
-      console.log(`[MASK FOUND] ${maskUrl}`);
-    } else {
-      console.log(`[MASK NOT FOUND] Perfect Corp may not provide mask data for ${productType} VTO`);
-    }
-    
     return { resultUrl, taskId, maskUrl };
-  } catch (error) {
-    console.error(`Network error during VTO:`, error);
-    return { error: `Network error` };
+  } catch {
+    return { error: "Network error" };
   }
 }
 
@@ -296,11 +266,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // No wrist size validation - client handles visual scaling
-  // API always generates baseline 60mm result
-
   // Validate file before processing - CRITICAL: Perfect Corp charges on task creation
-  // Reject obviously invalid files to prevent wasted charges
   if (file.size < 1000) {
     return NextResponse.json(
       { error: "File too small. Please capture a valid image." },
@@ -322,30 +288,34 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: session } = await supabaseAdmin
-    .from("vto_sessions")
-    .select("id,tenant_id,product_id,task_id,status")
-    .eq("id", sessionId)
-    .maybeSingle();
+  // Fetch session and product in parallel (performance optimization)
+  const [sessionResult, productResult] = await Promise.all([
+    supabaseAdmin
+      .from("vto_sessions")
+      .select("id,tenant_id,product_id,task_id,status")
+      .eq("id", sessionId)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("products")
+      .select("id,type,image_url,metadata")
+      .eq("id", productId)
+      .maybeSingle(),
+  ]);
+
+  const session = sessionResult.data;
+  const product = productResult.data;
 
   if (!session || session.product_id !== productId) {
     return NextResponse.json({ error: "Invalid session." }, { status: 404 });
   }
 
   // CRITICAL: If a task was already created for this session, don't create another
-  // This prevents duplicate charges if user retries
   if (session.task_id && session.status === "pending") {
     return NextResponse.json(
       { error: "Task already in progress. Please wait for the current attempt to complete." },
       { status: 400 }
     );
   }
-
-  const { data: product } = await supabaseAdmin
-    .from("products")
-    .select("id,type,image_url,metadata")
-    .eq("id", productId)
-    .maybeSingle();
 
   if (!product) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
@@ -369,7 +339,7 @@ export async function POST(request: Request) {
 
   const sourceUrl = publicUrl.publicUrl;
 
-  // Update session with source image (wrist size handled client-side)
+  // Update session with source image
   await supabaseAdmin
     .from("vto_sessions")
     .update({ 
@@ -383,22 +353,17 @@ export async function POST(request: Request) {
     process.env.PERFECT_CORP_API_URL ||
     "https://yce-api-01.makeupar.com";
 
-  // Diagnostic check: Ensure API key exists and has the correct prefix
   if (!apiKey) {
-    console.error("Configuration Error: PERFECT_CORP_API_KEY is missing.");
     return NextResponse.json(
       { error: "Server configuration error" },
       { status: 500 }
     );
   }
 
-  // Clean the key: remove any accidental quotes or whitespace
   const cleanKey = apiKey.trim().replace(/^["']|["']$/g, "");
 
-  // Validate API key format
   const keyValidation = validateApiKeyFormat(cleanKey);
   if (!keyValidation.valid) {
-    console.error("API Key Format Validation Failed:", keyValidation.error);
     await supabaseAdmin
       .from("vto_sessions")
       .update({
@@ -407,25 +372,14 @@ export async function POST(request: Request) {
       })
       .eq("id", session.id);
     return NextResponse.json(
-      {
-        error: "API key validation failed",
-        details: keyValidation.error,
-      },
+      { error: "API key validation failed" },
       { status: 500 }
     );
   }
 
-  // LOGGING FOR DEBUGGING
-  console.log(`Attempting VTO with Key Prefix: ${cleanKey.substring(0, 8)}...`);
-  console.log(`Key Length: ${cleanKey.length} characters`);
-  console.log(`[VTO] Product Type: ${product.type}`);
-
   const metadata = product.metadata || {};
 
   try {
-    // Create VTO task based on product type
-    console.log(`[VTO] Creating ${product.type} try-on task...`);
-
     const result = await createAndPollVTOTask({
       apiKey: cleanKey,
       baseUrl,
@@ -451,72 +405,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Save task_id and mark as pending
-    await supabaseAdmin
-      .from("vto_sessions")
-      .update({
-        task_id: result.taskId || null,
-        status: "pending",
-      })
-      .eq("id", session.id);
+    // Batch: update session + atomically deduct tenant unit in parallel
+    await Promise.all([
+      supabaseAdmin
+        .from("vto_sessions")
+        .update({
+          task_id: result.taskId || null,
+          status: "success",
+          result_url: result.resultUrl,
+        })
+        .eq("id", session.id),
+      supabaseAdmin.rpc("deduct_api_unit", { p_tenant_id: session.tenant_id }),
+    ]);
 
-    // Check if already succeeded (prevent double charges on retries)
-    const { data: existingSession } = await supabaseAdmin
-      .from("vto_sessions")
-      .select("status,result_url")
-      .eq("id", session.id)
-      .single();
-
-    const alreadySucceeded = existingSession?.status === "success" && existingSession?.result_url;
-
-    // Deduct 1 unit for custom size VTO
-    if (!alreadySucceeded) {
-      const { data: tenant } = await supabaseAdmin
-        .from("tenants")
-        .select("api_units")
-        .eq("id", session.tenant_id)
-        .single();
-
-      if (tenant && tenant.api_units > 0) {
-        await supabaseAdmin
-          .from("tenants")
-          .update({ api_units: tenant.api_units - 1 })
-          .eq("id", session.tenant_id);
-        console.log(
-          `[UNIT DEDUCTED] Tenant ${session.tenant_id}. Product: ${product.type}. Remaining: ${tenant.api_units - 1}`
-        );
-      } else {
-        console.warn(
-          `[UNIT WARNING] Cannot decrement units for tenant ${session.tenant_id}. Current units: ${tenant?.api_units || 0}`
-        );
-      }
-    } else {
-      console.log(`[UNIT SKIP] Session ${session.id} already succeeded - NOT deducting units again`);
-    }
-
-    await supabaseAdmin
-      .from("vto_sessions")
-      .update({
-        status: "success",
-        result_url: result.resultUrl,
-      })
-      .eq("id", session.id);
-
-    console.log(`[RESULT URL] ${result.resultUrl}`);
-    try {
-      const parsedUrl = new URL(result.resultUrl);
-      console.log(`[RESULT URL DOMAIN] ${parsedUrl.hostname}`);
-    } catch (e) {
-      console.warn("[RESULT URL] Could not parse URL:", result.resultUrl);
-    }
-
-    // Return result URL and mask URL (if available) for client-side canvas manipulation
-    return NextResponse.json({ 
-      resultUrl: result.resultUrl,
-      maskUrl: result.maskUrl || null 
-    });
+    return NextResponse.json(
+      { resultUrl: result.resultUrl, maskUrl: result.maskUrl || null },
+      { headers: { "Cache-Control": "no-store, must-revalidate" } }
+    );
   } catch (error) {
-    console.error("Network/Server Error during VTO call:", error);
     await supabaseAdmin
       .from("vto_sessions")
       .update({

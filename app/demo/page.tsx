@@ -1,13 +1,18 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import EmbedWidget from "@/components/vto/EmbedWidget";
 import Link from "next/link";
-import Image from "next/image";
+import SiteNav from "@/components/layout/SiteNav";
+import SiteFooter from "@/components/layout/SiteFooter";
+
+// Revalidate every 5 minutes (300 seconds)
+export const revalidate = 300;
 
 export default async function Demo() {
-  const supabase = await createSupabaseServerClient();
-  const demoProductIds = process.env.NEXT_PUBLIC_DEMO_PRODUCT_IDS?.split(',');
+  const supabase = createSupabaseAdminClient();
+  const demoProductIds = process.env.NEXT_PUBLIC_DEMO_PRODUCT_IDS?.split(',').filter(Boolean);
 
-  let products = [];
+  type ProductRow = { id: string; name: string | null; type: string | null; image_url: string | null; metadata: unknown; is_active: boolean };
+  let products: ProductRow[] = [];
 
   if (demoProductIds && demoProductIds.length > 0) {
     const { data } = await supabase
@@ -15,7 +20,7 @@ export default async function Demo() {
       .select("id,name,type,image_url,metadata,is_active")
       .in("id", demoProductIds)
       .eq("is_active", true);
-    if (data) {
+    if (data && data.length > 0) {
       products = data;
     }
   }
@@ -26,7 +31,7 @@ export default async function Demo() {
       .select("id,name,type,image_url,metadata,is_active")
       .eq("is_active", true)
       .order("created_at", { ascending: false })
-      .limit(3);
+      .limit(6);
     if (data && data.length > 0) {
       products = data;
     }
@@ -34,39 +39,7 @@ export default async function Demo() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#F9FAFB]">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 bg-white shadow-lg py-3 transition-all duration-300">
-        <div className="container mx-auto px-6">
-          <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-3">
-              <Image src="/imgs/logo-only.png" alt="ViaTryon" width={40} height={40} className="h-10 w-10" />
-              <span className="font-serif text-2xl font-medium text-[#1F2937] tracking-tight">
-                ViaTryon
-              </span>
-            </Link>
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-[#1F2937] text-base font-medium hover:text-[#F28C38] transition-colors">
-                Home
-              </Link>
-              <Link href="/how-it-works" className="text-[#1F2937] text-base font-medium hover:text-[#F28C38] transition-colors">
-                How It Works
-              </Link>
-              <Link href="/requirements" className="text-[#1F2937] text-base font-medium hover:text-[#F28C38] transition-colors">
-                Requirements
-              </Link>
-              <Link href="/demo" className="text-[#2D8C88] text-base font-bold">
-                Demo
-              </Link>
-              <Link
-                href="/login"
-                className="bg-[#2D8C88] text-white px-6 py-2 rounded-full font-medium hover:bg-[#F28C38] transition-all duration-200"
-              >
-                Login
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* Hero Section */}
       <section className="pt-32 pb-16 relative overflow-hidden">
@@ -107,62 +80,69 @@ export default async function Demo() {
           <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-lg max-w-2xl mx-auto">
             <div className="text-6xl mb-4">💍</div>
             <p className="text-lg text-gray-700 mb-2">
-              No demo products available at the moment.
+              No demo products available yet.
             </p>
-            <p className="text-sm text-gray-500">
-              Contact us to set up a personalized demo with your products.
+            <p className="text-sm text-gray-500 mb-4">
+              Seed demo products from this project (no external files needed):
+            </p>
+            <code className="block text-left bg-gray-100 rounded-lg p-4 text-sm text-gray-800 overflow-x-auto">
+              node scripts/seed-demo-from-public.js
+            </code>
+            <p className="text-sm text-gray-500 mt-4">
+              Restart the dev server after running the script, then refresh this page.
             </p>
           </div>
         )}
       </section>
 
       {/* Instructions */}
-      <section className="border-t border-gray-200 bg-white py-16">
+      <section className="border-t border-gray-200 bg-white py-20">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto">
-            <h2 className="mb-8 text-center text-3xl font-serif text-[#1F2937]">How to Try</h2>
+            <h2 className="mb-4 text-center text-3xl font-serif text-[#1F2937]">How to Try On</h2>
+            <p className="text-center text-[#4B5563] mb-12">Follow these simple steps to experience virtual try-on</p>
             <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#2D8C88] text-white font-bold text-lg">
+              <div className="flex gap-4 bg-[#F9FAFB] rounded-xl p-6 border border-gray-200">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D8C88] to-[#F28C38] text-white font-bold text-lg shadow-md">
                   1
                 </div>
                 <div>
                   <h3 className="mb-1 font-semibold text-[#1F2937]">Click "Try It On"</h3>
-                  <p className="text-gray-600">
+                  <p className="text-[#4B5563]">
                     Select any product above and click the try-on button
                   </p>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#2D8C88] text-white font-bold text-lg">
+              <div className="flex gap-4 bg-[#F9FAFB] rounded-xl p-6 border border-gray-200">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D8C88] to-[#F28C38] text-white font-bold text-lg shadow-md">
                   2
                 </div>
                 <div>
                   <h3 className="mb-1 font-semibold text-[#1F2937]">Allow Camera Access</h3>
-                  <p className="text-gray-600">
+                  <p className="text-[#4B5563]">
                     Grant camera permission when prompted (required for try-on)
                   </p>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#2D8C88] text-white font-bold text-lg">
+              <div className="flex gap-4 bg-[#F9FAFB] rounded-xl p-6 border border-gray-200">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D8C88] to-[#F28C38] text-white font-bold text-lg shadow-md">
                   3
                 </div>
                 <div>
                   <h3 className="mb-1 font-semibold text-[#1F2937]">Capture Your Photo</h3>
-                  <p className="text-gray-600">
+                  <p className="text-[#4B5563]">
                     Follow the on-screen guide to position your wrist or hand correctly
                   </p>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#2D8C88] text-white font-bold text-lg">
+              <div className="flex gap-4 bg-[#F9FAFB] rounded-xl p-6 border border-gray-200">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#2D8C88] to-[#F28C38] text-white font-bold text-lg shadow-md">
                   4
                 </div>
                 <div>
                   <h3 className="mb-1 font-semibold text-[#1F2937]">See the Result</h3>
-                  <p className="text-gray-600">
-                    Wait a few seconds for Perfect Corp AI to process your virtual try-on
+                  <p className="text-[#4B5563]">
+                    Wait a few seconds for AI processing - see the product on your wrist in real-time
                   </p>
                 </div>
               </div>
@@ -172,82 +152,37 @@ export default async function Demo() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-[#2D8C88] to-[#F28C38]">
-        <div className="container mx-auto px-6">
+      <section className="py-20 bg-gradient-to-r from-[#2D8C88] to-[#F28C38] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+        </div>
+        <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-serif font-bold text-white mb-4">Impressed? Add This to Your Store</h2>
-            <p className="text-lg text-white/90 mb-8">
-              Set up virtual try-on for your entire jewelry catalog in minutes
+            <h2 className="text-4xl font-serif font-semibold text-white mb-4">Ready to Add This to Your Store?</h2>
+            <p className="text-xl text-white/95 mb-8">
+              Set up virtual try-on for your entire jewelry catalog in under 10 minutes
             </p>
-            <div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/signup"
-                className="inline-block bg-white text-[#2D8C88] px-8 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-200"
+                className="inline-block bg-white text-[#2D8C88] px-10 py-4 rounded-full font-semibold hover:bg-gray-100 transition-all duration-200 shadow-xl hover:shadow-2xl"
               >
                 Start Free Trial
               </Link>
+              <Link
+                href="/"
+                className="inline-block border-2 border-white text-white px-10 py-4 rounded-full font-semibold hover:bg-white hover:text-[#2D8C88] transition-all duration-200"
+              >
+                Learn More
+              </Link>
             </div>
+            <p className="mt-6 text-white/90 text-sm">No credit card required • Cancel anytime</p>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#111827] text-white pt-20 pb-12">
-        <div className="container mx-auto px-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
-            {/* Brand Column */}
-            <div className="md:col-span-5">
-              <div className="flex items-center mb-8">
-                <Image src="/imgs/logo-only.png" alt="ViaTryon" width={56} height={56} className="h-14 mr-4" />
-                <span className="text-3xl font-serif" style={{ color: '#2D8C88' }}>
-                  ViaTryon
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm mb-10 max-w-sm leading-relaxed">
-                Elevate your luxury shopping with our cutting-edge AR virtual try-on. 
-                Experience watches, bracelets, and rings in real-time, anywhere.
-              </p>
-            </div>
-
-            {/* Links Columns */}
-            <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
-              <div>
-                <h3 className="text-sm font-medium uppercase tracking-widest mb-6" style={{ color: '#2D8C88' }}>
-                  Try-On
-                </h3>
-                <ul className="space-y-4">
-                  <li><Link href="/demo" className="text-gray-300 hover:text-[#F28C38] transition-colors">Virtual Try-On</Link></li>
-                  <li><Link href="/how-it-works" className="text-gray-300 hover:text-[#F28C38] transition-colors">How It Works</Link></li>
-                  <li><Link href="/requirements" className="text-gray-300 hover:text-[#F28C38] transition-colors">Requirements</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium uppercase tracking-widest mb-6" style={{ color: '#2D8C88' }}>
-                  Company
-                </h3>
-                <ul className="space-y-4">
-                  <li><Link href="/about" className="text-gray-300 hover:text-[#F28C38] transition-colors">About</Link></li>
-                  <li><Link href="/contact" className="text-gray-300 hover:text-[#F28C38] transition-colors">Contact</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium uppercase tracking-widest mb-6" style={{ color: '#2D8C88' }}>
-                  Account
-                </h3>
-                <ul className="space-y-4">
-                  <li><Link href="/login" className="text-gray-300 hover:text-[#F28C38] transition-colors">Login</Link></li>
-                  <li><Link href="/signup" className="text-gray-300 hover:text-[#F28C38] transition-colors">Sign Up</Link></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="mt-16 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm">
-            <p>© {new Date().getFullYear()} ViaTryon. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

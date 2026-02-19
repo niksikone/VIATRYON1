@@ -64,17 +64,7 @@ export async function scaleImageServer(
   imageBuffer: Buffer,
   scaleFactor: number
 ): Promise<Buffer> {
-  // For server-side, we'll use the built-in sharp library if available
-  // Or fall back to sending the original image with Perfect Corp's built-in scaling
-  
-  // Note: This is a simplified version. In production, you'd use Sharp:
-  // const sharp = require('sharp');
-  // const metadata = await sharp(imageBuffer).metadata();
-  // const newWidth = Math.round(metadata.width! * scaleFactor);
-  // const newHeight = Math.round(metadata.height! * scaleFactor);
-  // return await sharp(imageBuffer).resize(newWidth, newHeight).toBuffer();
-  
-  // For MVP, we'll use Perfect Corp's object_infos parameters instead
+  // MVP: defer scaling to Perfect Corp's object_infos parameters
   return imageBuffer;
 }
 

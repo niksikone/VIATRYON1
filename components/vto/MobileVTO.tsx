@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import MobileCamera from "@/components/vto/MobileCamera";
 
@@ -17,7 +17,7 @@ type MobileVTOProps = {
   sessionId?: string;
 };
 
-export default function MobileVTO({ product, sessionId }: MobileVTOProps) {
+const MobileVTO = React.memo(({ product, sessionId }: MobileVTOProps) => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(
     sessionId || null
   );
@@ -31,7 +31,7 @@ export default function MobileVTO({ product, sessionId }: MobileVTOProps) {
     }
   }, [sessionId]);
 
-  const ensureSession = async () => {
+  const ensureSession = useCallback(async () => {
     if (currentSessionId) return currentSessionId;
     const response = await fetch("/api/qr/create-public", {
       method: "POST",
@@ -44,9 +44,9 @@ export default function MobileVTO({ product, sessionId }: MobileVTOProps) {
     const data = await response.json();
     setCurrentSessionId(data.sessionId);
     return data.sessionId as string;
-  };
+  }, [currentSessionId, product.id]);
 
-  const handleCapture = async (file: File) => {
+  const handleCapture = useCallback(async (file: File) => {
     setStatus("processing");
     setError(null);
 
@@ -68,20 +68,19 @@ export default function MobileVTO({ product, sessionId }: MobileVTOProps) {
         throw new Error(payload.error || "VTO failed.");
       }
 
-      console.log("[VTO] Result received:", payload.resultUrl);
       setResultUrl(payload.resultUrl);
       setStatus("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "VTO failed.");
       setStatus("error");
     }
-  };
+  }, [ensureSession, product.id]);
 
-  const handleRetakePhoto = () => {
+  const handleRetakePhoto = useCallback(() => {
     setStatus("idle");
     setResultUrl(null);
     setError(null);
-  };
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -93,13 +92,13 @@ export default function MobileVTO({ product, sessionId }: MobileVTOProps) {
       </div>
 
       {/* Product Image */}
-      <div className="relative h-40 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+      <div className="relative h-32 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
         <Image
           src={product.image_url}
           alt={product.name}
           fill
+          sizes="(max-width: 640px) 100vw, 400px"
           className="object-cover"
-          unoptimized
         />
       </div>
 
@@ -136,12 +135,12 @@ export default function MobileVTO({ product, sessionId }: MobileVTOProps) {
           {/* Result Image */}
           <div className="relative h-96 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
             <Image
-              src={resultUrl}
-              alt="Try-on result"
-              fill
-              className="object-contain"
-              unoptimized
-            />
+            src={resultUrl}
+            alt="Try-on result"
+            fill
+            sizes="(max-width: 640px) 100vw, 600px"
+            className="object-contain"
+          />
           </div>
 
           {/* Action Button */}
@@ -156,4 +155,8 @@ export default function MobileVTO({ product, sessionId }: MobileVTOProps) {
       )}
     </div>
   );
-}
+});
+
+MobileVTO.displayName = 'MobileVTO';
+
+export default MobileVTO;

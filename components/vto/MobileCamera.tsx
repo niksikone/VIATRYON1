@@ -26,16 +26,10 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
     window.ymkAsyncInit = function () {
       if (!window.YMK) return;
 
-      window.YMK.addEventListener("loaded", () => {
-        console.log("YMK Camera Kit loaded");
-      });
+      window.YMK.addEventListener("loaded", () => {});
 
       window.YMK.addEventListener("faceDetectionCaptured", async function (capturedResult: any) {
-        console.log("Wrist captured:", capturedResult);
-        
-        // Only proceed if we have valid images
         if (!capturedResult.images || capturedResult.images.length === 0) {
-          console.warn("Camera captured but no images received - rejecting capture");
           setIsCapturing(false);
           window.YMK.close();
           return;
@@ -43,9 +37,7 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
 
         const image = capturedResult.images[0].image;
         
-        // Validate image exists and is valid
         if (!image) {
-          console.warn("No image data in capture result - rejecting capture");
           setIsCapturing(false);
           window.YMK.close();
           return;
@@ -55,10 +47,8 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
           let blob: Blob;
           
           if (typeof image === "string") {
-            // Base64 string
             const base64Data = image.split(",")[1] || image;
             if (!base64Data || base64Data.length < 100) {
-              console.warn("Invalid base64 image data - rejecting capture");
               setIsCapturing(false);
               window.YMK.close();
               return;
@@ -71,9 +61,7 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
             const byteArray = new Uint8Array(byteNumbers);
             blob = new Blob([byteArray], { type: "image/jpeg" });
           } else {
-            // Already a Blob - validate size
             if (image.size < 1000) {
-              console.warn("Image too small, likely invalid - rejecting capture");
               setIsCapturing(false);
               window.YMK.close();
               return;
@@ -81,9 +69,7 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
             blob = image;
           }
 
-          // Final validation: ensure blob is valid and has reasonable size
           if (!blob || blob.size < 1000) {
-            console.warn("Invalid or too small image blob - rejecting capture");
             setIsCapturing(false);
             window.YMK.close();
             return;
@@ -91,31 +77,25 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
 
           const file = new File([blob], "wrist-capture.jpg", { type: "image/jpeg" });
           
-          // Only call callback if we have a valid file
           if (captureCallbackRef.current && file.size > 1000) {
             captureCallbackRef.current(file);
-          } else {
-            console.warn("Invalid file, not sending to API");
           }
           
           window.YMK.close();
           setIsCapturing(false);
-        } catch (error) {
-          console.error("Error processing captured image:", error);
+        } catch {
           setIsCapturing(false);
           window.YMK.close();
         }
       });
 
       window.YMK.addEventListener("cameraFailed", function (error: any) {
-        console.error("Camera failed:", error);
         setIsCapturing(false);
         alert(`Camera error: ${error.code || error.message || "Unknown error"}. Please try again.`);
         window.YMK.close();
       });
 
       window.YMK.addEventListener("closed", function () {
-        console.log("Camera closed");
         setIsCapturing(false);
       });
 
@@ -133,13 +113,11 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
         faceDetectionMode: "wrist",
         imageFormat: "base64",
         language: "enu",
-        // ADD THIS LINE TO BYPASS VERSION/RESOLUTION GATE
         disableCameraResolutionCheck: true,
       });
       
       window.YMK.openCameraKit();
-    } catch (error) {
-      console.error("Error opening camera:", error);
+    } catch {
       setIsCapturing(false);
     }
   };
@@ -156,7 +134,7 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
       />
       
       <div className="space-y-3">
-        <div id="YMK-module" className="min-h-[400px]" />
+        <div id="YMK-module" className="min-h-[120px]" />
         
         {!isCapturing && sdkLoaded && (
           <button

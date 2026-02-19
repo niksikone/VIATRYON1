@@ -1,18 +1,33 @@
+import Link from "next/link";
+import SiteNav from "@/components/layout/SiteNav";
+import SiteFooter from "@/components/layout/SiteFooter";
+
 export default function SignupPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-6 text-white">
-      <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-900 p-8 text-center shadow-lg">
-        <h1 className="mb-3 text-2xl font-semibold">Signups are disabled</h1>
-        <p className="text-sm text-neutral-400">
-          Accounts are created by the platform administrator.
-        </p>
-        <a
-          className="mt-6 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black"
-          href="/login"
-        >
-          Go to login
-        </a>
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-[#F9FAFB]">
+      <SiteNav />
+      <div className="flex-1 flex items-center justify-center px-6 py-24">
+        <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-8 text-center shadow-sm">
+          <h1 className="mb-3 text-3xl font-serif font-semibold text-[#1F2937]">
+            Signups are disabled
+          </h1>
+          <p className="text-[#4B5563] mb-8">
+            Accounts are created by the platform administrator. Contact your admin or try logging in if you already have an account.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block bg-[#2D8C88] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#F28C38] transition-all duration-200"
+          >
+            Go to login
+          </Link>
+          <div className="mt-6">
+            <Link href="/" className="text-sm text-[#4B5563] hover:text-[#2D8C88] transition-colors">
+              ← Back to home
+            </Link>
+          </div>
+        </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

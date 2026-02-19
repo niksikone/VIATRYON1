@@ -18,7 +18,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid access token." }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => null);
+  let body;
+  try {
+    body = await request.json();
+  } catch (error) {
+    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
+
   const name = body?.name?.trim();
   const slug = body?.slug?.trim();
 
@@ -36,7 +42,14 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (existingProfile) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json(
+      { ok: true },
+      {
+        headers: {
+          'Cache-Control': 'no-store, must-revalidate',
+        },
+      }
+    );
   }
 
   const { data: tenant, error: tenantError } = await supabaseAdmin
@@ -59,11 +72,20 @@ export async function POST(request: Request) {
   });
 
   if (profileError) {
+    // Rollback: Try to delete the tenant if profile creation fails
+    await supabaseAdmin.from("tenants").delete().eq("id", tenant.id);
     return NextResponse.json(
       { error: profileError.message },
       { status: 400 }
     );
   }
 
-  return NextResponse.json({ ok: true, tenantId: tenant.id });
+  return NextResponse.json(
+    { ok: true, tenantId: tenant.id },
+    {
+      headers: {
+        'Cache-Control': 'no-store, must-revalidate',
+      },
+    }
+  );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import EmbedWidget from './EmbedWidget';
 
@@ -20,10 +20,17 @@ type ProductShowcaseProps = {
   };
 };
 
-export default function ProductShowcase({ products }: ProductShowcaseProps) {
+const ProductShowcase = React.memo(({ products }: ProductShowcaseProps) => {
   const [activeCategory, setActiveCategory] = useState<'watches' | 'bracelets' | 'rings'>('watches');
 
-  const hasProducts = products.watches.length > 0 || products.bracelets.length > 0 || products.rings.length > 0;
+  const hasProducts = useMemo(
+    () => products.watches.length > 0 || products.bracelets.length > 0 || products.rings.length > 0,
+    [products]
+  );
+
+  const handleCategoryChange = useCallback((category: 'watches' | 'bracelets' | 'rings') => {
+    setActiveCategory(category);
+  }, []);
 
   if (!hasProducts) {
     return (
@@ -67,7 +74,7 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
         <div className="flex justify-center gap-4 mb-12 flex-wrap">
           {products.watches.length > 0 && (
             <button
-              onClick={() => setActiveCategory('watches')}
+              onClick={() => handleCategoryChange('watches')}
               className={`px-6 py-3 rounded-full font-medium capitalize transition-all duration-200 ${
                 activeCategory === 'watches'
                   ? 'bg-[#2D8C88] text-white'
@@ -79,7 +86,7 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
           )}
           {products.bracelets.length > 0 && (
             <button
-              onClick={() => setActiveCategory('bracelets')}
+              onClick={() => handleCategoryChange('bracelets')}
               className={`px-6 py-3 rounded-full font-medium capitalize transition-all duration-200 ${
                 activeCategory === 'bracelets'
                   ? 'bg-[#2D8C88] text-white'
@@ -91,7 +98,7 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
           )}
           {products.rings.length > 0 && (
             <button
-              onClick={() => setActiveCategory('rings')}
+              onClick={() => handleCategoryChange('rings')}
               className={`px-6 py-3 rounded-full font-medium capitalize transition-all duration-200 ${
                 activeCategory === 'rings'
                   ? 'bg-[#2D8C88] text-white'
@@ -132,4 +139,8 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
       </div>
     </section>
   );
-}
+});
+
+ProductShowcase.displayName = 'ProductShowcase';
+
+export default ProductShowcase;

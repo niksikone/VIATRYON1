@@ -1,8 +1,10 @@
-'use client';
-
 import React from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
+import SiteNav from '@/components/layout/SiteNav';
+import SiteFooter from '@/components/layout/SiteFooter';
+
+// This is a fully static page
+export const dynamic = 'force-static';
 
 export default function HowItWorks() {
   const steps = [
@@ -90,58 +92,32 @@ export default function HowItWorks() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 bg-white shadow-lg py-3">
-        <div className="container mx-auto px-6">
-          <div className="flex justify-between items-center">
-            <Link href="/" className="flex items-center">
-              <span className="font-serif text-2xl font-medium text-[#1F2937]">ViaTryon</span>
-            </Link>
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-[#1F2937] hover:text-[#F28C38]">Home</Link>
-              <Link href="/how-it-works" className="text-[#2D8C88] font-medium">How It Works</Link>
-              <Link href="/requirements" className="text-[#1F2937] hover:text-[#F28C38]">Requirements</Link>
-              <Link href="/demo" className="text-[#1F2937] hover:text-[#F28C38]">Demo</Link>
-              <Link href="/login" className="bg-[#2D8C88] text-white px-6 py-2 rounded-full hover:bg-[#F28C38]">
-                Login
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* Hero Section */}
       <section className="pt-24 pb-16 md:pt-32 md:pb-24 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.5 }}
-            className="absolute top-1/4 -left-60 w-[40rem] h-[40rem] rounded-full blur-[120px]"
-            style={{ background: `linear-gradient(135deg, rgba(45, 140, 136, 0.15) 0%, rgba(242, 140, 56, 0.15) 100%)` }}
+          <div
+            className="absolute top-1/4 -left-60 w-[40rem] h-[40rem] rounded-full blur-[120px] animate-fade-in"
+            style={{ background: `linear-gradient(135deg, rgba(45, 140, 136, 0.15) 0%, rgba(242, 140, 56, 0.15) 100%)`, animationDuration: '1.5s' }}
           />
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#1F2937] mb-6 leading-tight"
+            <h1
+              className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#1F2937] mb-6 leading-tight animate-fade-in-up"
             >
               <span className="block italic font-light">How Our</span>
               <span className="block font-medium mt-2 bg-gradient-to-r from-[#2D8C88] to-[#F28C38] bg-clip-text text-transparent">
                 Virtual Try-On Works
               </span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg text-gray-600 mb-8"
+            </h1>
+            <p
+              className="text-lg text-gray-600 mb-8 animate-fade-in-up animate-delay-200"
             >
               From product extraction to live AR experience in four simple steps
-            </motion.p>
+            </p>
           </div>
         </div>
       </section>
@@ -151,13 +127,10 @@ export default function HowItWorks() {
         <div className="container mx-auto px-6">
           <div className="grid gap-12 max-w-4xl mx-auto">
             {steps.map((step, index) => (
-              <motion.div
+              <div
                 key={step.id}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="flex gap-6 items-start"
+                className={`flex gap-6 items-start ${index % 2 === 0 ? 'animate-slide-in-left' : 'animate-slide-in-right'}`}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-[#2D8C88] to-[#F28C38] flex items-center justify-center text-white">
                   {step.icon}
@@ -169,7 +142,7 @@ export default function HowItWorks() {
                   </div>
                   <p className="text-gray-600 leading-relaxed">{step.description}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -178,26 +151,23 @@ export default function HowItWorks() {
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 animate-fade-in-up">
             <h2 className="text-3xl md:text-4xl font-serif text-[#1F2937] mb-4">Key Features</h2>
             <p className="text-gray-600">Everything you need for a world-class virtual try-on experience</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
-              <motion.div
+              <div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
+                className="text-center animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#2D8C88]/10 text-[#2D8C88] mb-4">
                   {feature.icon}
                 </div>
                 <h3 className="text-lg font-semibold text-[#1F2937] mb-2">{feature.title}</h3>
                 <p className="text-sm text-gray-600">{feature.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -219,14 +189,7 @@ export default function HowItWorks() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#111827] text-white pt-20 pb-12">
-        <div className="container mx-auto px-8">
-          <div className="text-center text-gray-400 text-sm">
-            <p>© {new Date().getFullYear()} ViaTryon. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
