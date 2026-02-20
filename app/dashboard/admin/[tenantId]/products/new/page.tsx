@@ -35,6 +35,7 @@ export default function TenantNewProductPage() {
   const [type, setType] = useState<JewelryType>("watch");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [websiteImageUrl, setWebsiteImageUrl] = useState("");
   const [metadata, setMetadata] = useState<Record<string, number>>(
     defaultMetadata.watch
   );
@@ -91,6 +92,15 @@ export default function TenantNewProductPage() {
       setError("Product image is required.");
       return;
     }
+    const trimmedWebsiteUrl = websiteImageUrl.trim();
+    if (trimmedWebsiteUrl) {
+      try {
+        new URL(trimmedWebsiteUrl);
+      } catch {
+        setError("Product image URL on their website must be a valid URL.");
+        return;
+      }
+    }
 
     setLoading(true);
 
@@ -118,6 +128,7 @@ export default function TenantNewProductPage() {
       name,
       type,
       image_url: publicUrl.publicUrl,
+      website_image_url: trimmedWebsiteUrl || null,
       price: price ? Number(price) : null,
       metadata,
     });
@@ -243,6 +254,22 @@ export default function TenantNewProductPage() {
                 />
                 <p className="mt-2 text-xs text-[#4B5563]">PNG, JPG up to 10MB</p>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#1F2937] mb-2">
+                Product image URL on their website
+              </label>
+              <input
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-[#1F2937] focus:border-[#2D8C88] focus:ring-2 focus:ring-[#2D8C88]/20 outline-none transition-all"
+                type="url"
+                placeholder="https://client-site.com/images/watch-1.png"
+                value={websiteImageUrl}
+                onChange={(event) => setWebsiteImageUrl(event.target.value)}
+              />
+              <p className="mt-2 text-xs text-[#4B5563]">
+                Optional. Link to this product&apos;s image on the client&apos;s site so it&apos;s connected to your upload.
+              </p>
             </div>
           </div>
         </div>
