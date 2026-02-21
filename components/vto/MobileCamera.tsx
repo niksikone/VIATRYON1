@@ -26,7 +26,7 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
     window.ymkAsyncInit = function () {
       if (!window.YMK) return;
 
-      window.YMK.addEventListener("loaded", () => {});
+      window.YMK.addEventListener("loaded", () => { });
 
       window.YMK.addEventListener("faceDetectionCaptured", async function (capturedResult: any) {
         if (!capturedResult.images || capturedResult.images.length === 0) {
@@ -36,16 +36,16 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
         }
 
         const image = capturedResult.images[0].image;
-        
+
         if (!image) {
           setIsCapturing(false);
           window.YMK.close();
           return;
         }
-        
+
         try {
           let blob: Blob;
-          
+
           if (typeof image === "string") {
             const base64Data = image.split(",")[1] || image;
             if (!base64Data || base64Data.length < 100) {
@@ -76,11 +76,11 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
           }
 
           const file = new File([blob], "wrist-capture.jpg", { type: "image/jpeg" });
-          
+
           if (captureCallbackRef.current && file.size > 1000) {
             captureCallbackRef.current(file);
           }
-          
+
           window.YMK.close();
           setIsCapturing(false);
         } catch {
@@ -114,7 +114,7 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
         const videoConstraints = typeof constraints.video === "object" ? constraints.video : {};
         constraints = {
           ...constraints,
-          video: { ...videoConstraints, facingMode: { ideal: "environment" } },
+          video: { ...videoConstraints, facingMode: { exact: "environment" } },
         };
       }
       return originalGetUserMedia(constraints);
@@ -150,10 +150,10 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
           }
         }}
       />
-      
+
       <div className="space-y-3">
         <div id="YMK-module" className="min-h-[120px]" />
-        
+
         {!isCapturing && sdkLoaded && (
           <button
             type="button"
@@ -164,7 +164,7 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
             📸 Open Professional Wrist Camera
           </button>
         )}
-        
+
         {/* Fallback for HTTP/iOS */}
         <input
           className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-white file:mr-4 file:rounded file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-semibold file:text-black"
@@ -179,13 +179,13 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
             }
           }}
         />
-        
+
         {!sdkLoaded && (
           <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-4 text-center text-sm text-neutral-400">
             Loading camera module...
           </div>
         )}
-        
+
         <p className="text-xs text-neutral-400">
           Position your wrist with all five fingers visible for best results.
         </p>
