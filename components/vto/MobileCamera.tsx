@@ -105,9 +105,26 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
 
   const openCamera = () => {
     if (!window.YMK || disabled) return;
-    
+
     setIsCapturing(true);
-    
+
+    const originalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+    navigator.mediaDevices.getUserMedia = (constraints) => {
+      if (constraints?.video) {
+        const videoConstraints = typeof constraints.video === "object" ? constraints.video : {};
+        constraints = {
+          ...constraints,
+          video: { ...videoConstraints, facingMode: { ideal: "environment" } },
+        };
+      }
+      return originalGetUserMedia(constraints);
+    };
+
+    const restoreId = window.YMK.addEventListener("cameraOpened", () => {
+      navigator.mediaDevices.getUserMedia = originalGetUserMedia;
+      window.YMK.removeEventListener(restoreId);
+    });
+
     try {
       window.YMK.init({
         faceDetectionMode: "wrist",
@@ -115,9 +132,10 @@ export default function MobileCamera({ onCapture, disabled }: MobileCameraProps)
         language: "enu",
         disableCameraResolutionCheck: true,
       });
-      
+
       window.YMK.openCameraKit();
     } catch {
+      navigator.mediaDevices.getUserMedia = originalGetUserMedia;
       setIsCapturing(false);
     }
   };

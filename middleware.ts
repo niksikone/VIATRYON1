@@ -2,11 +2,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 
+const SUPABASE_URL_PLACEHOLDER = "https://placeholder.supabase.co";
+const SUPABASE_ANON_KEY_PLACEHOLDER = "placeholder-anon-key";
+
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL_PLACEHOLDER;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_ANON_KEY_PLACEHOLDER;
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {
@@ -38,9 +43,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // Use service role to bypass RLS for admin + profile checks
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-service-role-key";
   const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+    url,
+    serviceKey,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
